@@ -39,7 +39,8 @@ on:
         required: false
 
 permissions:
-  models: read
+  contents: read
+  copilot-requests: write
 
 jobs:
   benchmarks:
@@ -186,9 +187,16 @@ jobs:
           NEW_VERSION: ${{ inputs.new == 'trunk' && 'master' || inputs.new }}
           TITLE: ${{ inputs.title }}
 
+      # Not pre-installed on GitHub-hosted runners, and actions/ai-inference@v3
+      # only supports the Copilot provider.
+      - name: Install Copilot CLI
+        run: npm install -g @github/copilot
+
       - name: AI Summary for Non-Technical Users
         id: ai-summary
         uses: actions/ai-inference@v3
+        env:
+          COPILOT_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           prompt: |
             Please analyze the following WordPress performance benchmark results and provide a clear, easy-to-understand summary for non-technical users.
